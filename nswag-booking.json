@@ -2,12 +2,12 @@
   "runtime": "Net80",
   "documentGenerator": {
     "fromDocument": {
-      "url": "http://localhost:8001/swagger/v1/swagger.json"
+      "url": "https://localhost:7163/swagger/v1/swagger.json"
     }
   },
   "codeGenerators": {
     "openApiToTypeScriptClient": {
-      "output": "../src/api/bookingApiClient.generated.ts",
+      "output": "D:/SSU/Магистратура/2_1/Веб разработка/booking-service-ui/src/api/bookingApiClient.generated.ts",
       "className": "BookingApiClient",
       "template": "Fetch",
       "dateTimeType": "string",

@@ -65,7 +65,7 @@ const emit = defineEmits<{
 
 // Вычисляем общую стоимость
 const calculateTotalPrice = computed(() => {
-  return Math.min(...props.hotel.rooms!.map((room) => room.price!))
+  return Math.min(...props.hotel.roomTypes!.map((room) => room.price!))
 })
 
 // Обработчик ошибки загрузки изображения

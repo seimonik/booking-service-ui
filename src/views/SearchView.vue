@@ -143,7 +143,7 @@ const handleSearch = () => {
 }
 
 const viewAllHotels = () => {
-  router.push('/booking')
+  router.push('/hotels')
 }
 </script>
 

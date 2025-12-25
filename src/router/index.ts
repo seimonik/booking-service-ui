@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import MainView from '@/views/MainView.vue'
 import SearchView from '@/views/SearchView.vue'
 import BookingView from '@/views/BookingView.vue'
+import HotelsView from '@/views/HotelsView.vue'
+import PaymentView from '@/views/PaymentView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,12 +23,25 @@ const router = createRouter({
           },
         },
         {
-          path: '/booking',
-          name: 'Booking',
-          component: BookingView,
+          path: '/hotels',
+          name: 'Hotels',
+          component: HotelsView,
           meta: {
             title: 'Отели',
           },
+        },
+        {
+          path: '/booking/:hotelId',
+          name: 'Booking',
+          component: BookingView,
+          meta: {
+            title: 'Бронирование',
+          },
+          props: (route) => ({
+            hotelId: route.params.hotelId,
+            checkIn: route.query.checkIn,
+            checkOut: route.query.checkOut,
+          }),
         },
         {
           path: '/about',
@@ -38,11 +53,23 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/payment/:amount',
+      name: 'Payment',
+      component: PaymentView,
+      meta: {
+        title: 'Оплата',
+      },
+      props: (route) => ({
+        amount: route.params.amount,
+        bookingId: route.query.bookingId,
+      }),
+    },
   ],
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title
+  document.title = to.meta.title as string
   if (to.name === 'root') {
     next('/home')
   }
