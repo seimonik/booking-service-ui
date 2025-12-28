@@ -170,6 +170,7 @@ const processPayment = async (): Promise<void> => {
       expiry: paymentData.expiryDate,
       cvv: paymentData.cvv,
       amount: props.amount,
+      bookingId: props.bookingId,
     } as PaymentRequest
 
     const response = await BookingStore.ProcessPayment(payload)

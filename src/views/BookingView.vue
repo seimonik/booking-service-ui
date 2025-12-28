@@ -44,7 +44,28 @@
               <span>Цена за ночь:</span>
               <span>{{ selectedRoom.price }} ₽</span>
             </div>
-            <div class="total-price">Итого: {{ totalPrice }} ₽</div>
+
+            <!-- Базовая стоимость -->
+            <div class="summary-item">
+              <span>Стоимость проживания:</span>
+              <span>{{ totalPrice }} ₽</span>
+            </div>
+
+            <!-- Скидка (если есть) -->
+            <div v-if="discountAmount > 0" class="summary-item discount-item">
+              <span>Скидка:</span>
+              <span class="discount-amount">-{{ discountAmount }} ₽</span>
+            </div>
+
+            <!-- Итоговая цена -->
+            <div class="total-price">Итого: {{ finalPrice }} ₽</div>
+
+            <!-- Экономия (если есть скидка) -->
+            <div v-if="discountAmount > 0" class="savings">
+              Вы экономите: {{ discountAmount }} ₽
+            </div>
+
+            <!-- <div class="total-price">Итого: {{ totalPrice }} ₽</div> -->
           </div>
         </div>
 
@@ -86,8 +107,16 @@
               <span class="promo-description">{{ appliedPromo.description }}</span>
             </div>
             <button @click="removePromoCode" class="remove-promo-btn" title="Удалить промокод">
-              <i class="fas fa-times"></i>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="currentColor">
+                <path
+                  d="M13 1.938L12.062 1L7 6.062L1.938 1L1 1.938L6.062 7L1 12.062L1.938 13L7 7.938L12.062 13L13 12.062L7.938 7L13 1.938Z"
+                />
+              </svg>
             </button>
+
+            <!-- <button @click="removePromoCode" class="remove-promo-btn" title="Удалить промокод">
+              <i class="fas fa-times"></i>
+            </button> -->
           </div>
         </div>
 
@@ -203,7 +232,7 @@ interface Notification {
 }
 
 interface Promocode {
-  code: boolean
+  code: string
   description: string
 }
 
@@ -232,18 +261,48 @@ const notification = ref<Notification>({
 const promoCodeInput = ref<string>('')
 const applyingPromo = ref<boolean>(false)
 const promoError = ref<string>('')
-const appliedPromo = ref<Promocode>({} as Promocode)
+const appliedPromo = ref<Promocode>()
 const discountAmount = ref<number>(0)
 // Итоговая цена (вычисляемое свойство)
 const finalPrice = computed(() => {
   return totalPrice.value - discountAmount.value
 })
-const applyPromoCode = () => {
+const applyPromoCode = async () => {
   console.log('Promo is active')
   console.log(finalPrice.value)
+  if (
+    promoCodeInput.value &&
+    selectedRoomId.value &&
+    customer.email &&
+    customer.firstName &&
+    customer.lastName
+  ) {
+    const promocodeValidationResult = await BookingStore.ValidatePromocode(
+      promoCodeInput.value,
+      selectedRoomId.value,
+      customer.email,
+      `${customer.lastName} ${customer.firstName}`,
+    )
+
+    if (promocodeValidationResult.isValid) {
+      discountAmount.value = promocodeValidationResult.discountAmount!
+      promoError.value = ''
+      appliedPromo.value = {
+        code: promoCodeInput.value,
+        description: promocodeValidationResult.description,
+      } as Promocode
+    } else {
+      promoError.value = promocodeValidationResult.message!
+      appliedPromo.value = undefined
+      discountAmount.value = 0
+    }
+  } else {
+    console.log('Необходимо заполнить обязательные поля')
+  }
 }
+
 const removePromoCode = () => {
-  appliedPromo.value = {} as Promocode
+  appliedPromo.value = undefined //{} as Promocode
   discountAmount.value = 0
   promoCodeInput.value = ''
   promoError.value = ''
@@ -333,7 +392,7 @@ const submitBooking = async () => {
 
   try {
     // Имитация API запроса
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    // await new Promise((resolve) => setTimeout(resolve, 1500))
 
     const bookingData = {
       hotelId: hotel.value.name,
@@ -341,7 +400,7 @@ const submitBooking = async () => {
       checkIn: props.checkIn,
       checkOut: props.checkOut,
       customer: { ...customer },
-      totalPrice: totalPrice.value,
+      totalPrice: finalPrice.value,
     }
 
     console.log('Booking data:', bookingData)
@@ -361,7 +420,7 @@ const submitBooking = async () => {
     router.push({
       name: 'Payment',
       params: {
-        amount: totalPrice.value,
+        amount: finalPrice.value,
       },
       query: {
         bookingId: bookingModel.id,
@@ -585,6 +644,66 @@ const submitBooking = async () => {
   padding-top: 15px;
 }
 
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.discount-item {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.discount-amount {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* .total-price {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+} */
+
+.savings {
+  background: #d4edda;
+  color: #155724;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 0.9em;
+  text-align: center;
+  border: 1px solid #c3e6cb;
+}
+
+/* Анимация для появления скидки */
+.discount-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .customer-form .form-group {
   margin-bottom: 20px;
 }
@@ -763,7 +882,7 @@ const submitBooking = async () => {
   font-size: 14px;
 }
 
-.remove-promo-btn {
+/* .remove-promo-btn {
   background: none;
   border: none;
   color: #7f8c8d;
@@ -776,6 +895,36 @@ const submitBooking = async () => {
 .remove-promo-btn:hover {
   background-color: #ffebee;
   color: #e53935;
+} */
+
+.remove-promo-btn {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  transition: all 0.3s ease;
+}
+
+.remove-promo-btn:hover,
+.remove-promo-btn:focus {
+  background-color: #ffebee;
+  color: #e53935;
+  outline: none;
+}
+
+.remove-promo-btn:focus {
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.3);
+}
+
+.remove-promo-btn svg {
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

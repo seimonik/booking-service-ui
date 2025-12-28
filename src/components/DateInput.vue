@@ -135,8 +135,13 @@ const toggleCalendar = () => {
 
 // Выбор даты
 const selectDate = (date: Date) => {
+  console.log(date)
   selectedDate.value = new Date(date)
-  emit('update:modelValue', selectedDate.value.toISOString().split('T')[0]!)
+  // emit('update:modelValue', selectedDate.value.toISOString().split('T')[0]!)
+  const year = selectedDate.value.getFullYear()
+  const month = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
+  const day = String(selectedDate.value.getDate()).padStart(2, '0')
+  emit('update:modelValue', `${year}-${month}-${day}`)
   isOpen.value = false
 }
 

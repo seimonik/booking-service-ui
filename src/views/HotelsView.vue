@@ -5,8 +5,8 @@
         <CustomInput v-model="searchParams.destination" placeholder="Куда хотите поехать?" />
         <DateInput v-model="searchParams.checkIn" placeholder="Заезд" />
         <DateInput v-model="searchParams.checkOut" placeholder="Выезд" />
-        <CustomButton text="Найти отель" />
-        <CustomButton text="Показать все отели" type="secondary" />
+        <CustomButton text="Найти отель" @click="handleSearch" />
+        <CustomButton text="Показать все отели" type="secondary" @click="viewAllHotels" />
       </div>
     </div>
     <div class="hotel-container">
@@ -39,34 +39,26 @@ const searchParams = ref<SearchParams>({
   destination: '',
   checkIn: '',
   checkOut: '',
-  guests: 2,
 })
-// const today = new Date().toISOString().slice(0, 10)
+const today = new Date().toISOString().slice(0, 10)
 const tomorrowDate = new Date()
 tomorrowDate.setDate(tomorrowDate.getDate() + 1)
-// const tomorrow = tomorrowDate.toISOString().slice(0, 10)
+const tomorrow = tomorrowDate.toISOString().slice(0, 10)
 
 const BookingStore = useBookingStore()
 const hotels = ref<HotelModel[]>([
   { name: 'название', address: 'адрес', roomTypes: [{ price: 0 }] },
 ])
 
-onMounted(async () => {
-  hotels.value = await BookingStore.GetBookings()
+const props = defineProps({
+  destination: String,
+  checkIn: String,
+  checkOut: String,
 })
 
-// const hotelData = ref<HotelInfo>({
-//   id: 1,
-//   name: 'Гранд Отель',
-//   location: 'Москва, Россия',
-//   imageUrl:
-//     'https://avatars.mds.yandex.net/get-tycoon/12301581/2a0000018cfd0949943b86c18766fe171c65/priority-headline-background',
-//   rating: 4.5,
-//   pricePerNight: 5000,
-//   features: ['Бесплатный Wi-Fi', 'Бассейн', 'Спа'],
-//   nights: 3,
-//   isFavorite: false,
-// })
+onMounted(async () => {
+  hotels.value = await BookingStore.GetBookings(props.destination, props.checkIn, props.checkOut)
+})
 
 const handleBookNow = (hotelId: string | undefined) => {
   console.log(`Забронировать отель с ID: ${hotelId}`)
@@ -75,8 +67,36 @@ const handleBookNow = (hotelId: string | undefined) => {
     name: 'Booking',
     params: { hotelId: hotelId },
     query: {
-      checkIn: '2025-12-26', //today,
-      checkOut: '2025-12-27', //tomorrow,
+      checkIn: props.checkIn || today,
+      checkOut: props.checkOut || tomorrow,
+    },
+  })
+}
+
+const handleSearch = async () => {
+  hotels.value = await BookingStore.GetBookings(
+    searchParams.value.destination.trim(),
+    searchParams.value.checkIn,
+    searchParams.value.checkOut,
+  )
+  router.push({
+    name: 'Hotels',
+    query: {
+      destination: searchParams.value.destination.trim(),
+      checkIn: searchParams.value.checkIn,
+      checkOut: searchParams.value.checkOut,
+    },
+  })
+}
+
+const viewAllHotels = async () => {
+  hotels.value = await BookingStore.GetBookings(undefined, undefined, undefined)
+  router.push({
+    name: 'Hotels',
+    query: {
+      destination: undefined,
+      checkIn: undefined,
+      checkOut: undefined,
     },
   })
 }

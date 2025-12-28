@@ -10,9 +10,25 @@
 export interface IBookingApiClient {
 
     /**
+     * @param email (optional) 
      * @return OK
      */
-    bookingAll(): Promise<HotelModel[]>;
+    sendCode(email: string | undefined): Promise<void>;
+
+    /**
+     * @param email (optional) 
+     * @param code (optional) 
+     * @return OK
+     */
+    verify(email: string | undefined, code: string | undefined): Promise<AuthClientModel>;
+
+    /**
+     * @param city (optional) 
+     * @param start (optional) 
+     * @param end (optional) 
+     * @return OK
+     */
+    bookingAll(city: string | undefined, start: string | undefined, end: string | undefined): Promise<HotelModel[]>;
 
     /**
      * @param body (optional) 
@@ -35,6 +51,22 @@ export interface IBookingApiClient {
     validatePromo(code: string | undefined, roomTypeId: string | undefined, email: string | undefined, fullName: string | undefined): Promise<PromocodeValidationResult>;
 
     /**
+     * @param clientId (optional) 
+     * @return OK
+     */
+    byClient(clientId: string | undefined): Promise<FullBookingModel[]>;
+
+    /**
+     * @return OK
+     */
+    calculateRefund(bookingId: string): Promise<number>;
+
+    /**
+     * @return OK
+     */
+    cancel(bookingId: string): Promise<void>;
+
+    /**
      * @param body (optional) 
      * @return OK
      */
@@ -52,10 +84,109 @@ export class BookingApiClient implements IBookingApiClient {
     }
 
     /**
+     * @param email (optional) 
      * @return OK
      */
-    bookingAll(): Promise<HotelModel[]> {
-        let url_ = this.baseUrl + "/api/booking";
+    sendCode(email: string | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/auth/send-code?";
+        if (email === null)
+            throw new globalThis.Error("The parameter 'email' cannot be null.");
+        else if (email !== undefined)
+            url_ += "email=" + encodeURIComponent("" + email) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSendCode(_response);
+        });
+    }
+
+    protected processSendCode(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @param email (optional) 
+     * @param code (optional) 
+     * @return OK
+     */
+    verify(email: string | undefined, code: string | undefined): Promise<AuthClientModel> {
+        let url_ = this.baseUrl + "/api/auth/verify?";
+        if (email === null)
+            throw new globalThis.Error("The parameter 'email' cannot be null.");
+        else if (email !== undefined)
+            url_ += "email=" + encodeURIComponent("" + email) + "&";
+        if (code === null)
+            throw new globalThis.Error("The parameter 'code' cannot be null.");
+        else if (code !== undefined)
+            url_ += "code=" + encodeURIComponent("" + code) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processVerify(_response);
+        });
+    }
+
+    protected processVerify(response: Response): Promise<AuthClientModel> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as AuthClientModel;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AuthClientModel>(null as any);
+    }
+
+    /**
+     * @param city (optional) 
+     * @param start (optional) 
+     * @param end (optional) 
+     * @return OK
+     */
+    bookingAll(city: string | undefined, start: string | undefined, end: string | undefined): Promise<HotelModel[]> {
+        let url_ = this.baseUrl + "/api/booking?";
+        if (city === null)
+            throw new globalThis.Error("The parameter 'city' cannot be null.");
+        else if (city !== undefined)
+            url_ += "city=" + encodeURIComponent("" + city) + "&";
+        if (start === null)
+            throw new globalThis.Error("The parameter 'start' cannot be null.");
+        else if (start !== undefined)
+            url_ += "start=" + encodeURIComponent("" + start) + "&";
+        if (end === null)
+            throw new globalThis.Error("The parameter 'end' cannot be null.");
+        else if (end !== undefined)
+            url_ += "end=" + encodeURIComponent("" + end) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -228,6 +359,122 @@ export class BookingApiClient implements IBookingApiClient {
     }
 
     /**
+     * @param clientId (optional) 
+     * @return OK
+     */
+    byClient(clientId: string | undefined): Promise<FullBookingModel[]> {
+        let url_ = this.baseUrl + "/api/booking/byClient?";
+        if (clientId === null)
+            throw new globalThis.Error("The parameter 'clientId' cannot be null.");
+        else if (clientId !== undefined)
+            url_ += "clientId=" + encodeURIComponent("" + clientId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processByClient(_response);
+        });
+    }
+
+    protected processByClient(response: Response): Promise<FullBookingModel[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as FullBookingModel[];
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FullBookingModel[]>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    calculateRefund(bookingId: string): Promise<number> {
+        let url_ = this.baseUrl + "/api/booking/{bookingId}/calculate-refund";
+        if (bookingId === undefined || bookingId === null)
+            throw new globalThis.Error("The parameter 'bookingId' must be defined.");
+        url_ = url_.replace("{bookingId}", encodeURIComponent("" + bookingId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processCalculateRefund(_response);
+        });
+    }
+
+    protected processCalculateRefund(response: Response): Promise<number> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as number;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<number>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    cancel(bookingId: string): Promise<void> {
+        let url_ = this.baseUrl + "/api/booking/{bookingId}/cancel";
+        if (bookingId === undefined || bookingId === null)
+            throw new globalThis.Error("The parameter 'bookingId' must be defined.");
+        url_ = url_.replace("{bookingId}", encodeURIComponent("" + bookingId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processCancel(_response);
+        });
+    }
+
+    protected processCancel(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
      * @param body (optional) 
      * @return OK
      */
@@ -279,6 +526,13 @@ export interface AddBookingModel {
     fullName?: string | undefined;
 }
 
+export interface AuthClientModel {
+    id?: string | undefined;
+    fullName?: string | undefined;
+    email?: string | undefined;
+    isValid?: boolean;
+}
+
 export interface BookingModel {
     id?: string;
     status?: BookingStatus;
@@ -294,11 +548,45 @@ export enum BookingStatus {
     _0 = 0,
     _1 = 1,
     _2 = 2,
+    _3 = 3,
+}
+
+export interface CancellationPolicyModel {
+    id?: string;
+    name?: string | undefined;
+    freeCancellationDays?: number;
+    penaltyType?: PenaltyType;
+    penaltyValue?: number;
 }
 
 export interface ClientModel {
     fullName?: string | undefined;
     email?: string | undefined;
+}
+
+export interface FullBookingModel {
+    id?: string;
+    status?: BookingStatus;
+    totalPrice?: number;
+    createdAt?: string;
+    checkInDate?: string;
+    checkOutDate?: string;
+    roomType?: FullRoomTypeModel;
+}
+
+export interface FullRoomTypeModel {
+    id?: string;
+    name?: string | undefined;
+    price?: number;
+    hotel?: HotelMiniModel;
+    cancellationPolicy?: CancellationPolicyModel;
+}
+
+export interface HotelMiniModel {
+    id?: string;
+    name?: string | undefined;
+    address?: string | undefined;
+    country?: string | undefined;
 }
 
 export interface HotelModel {
@@ -314,6 +602,13 @@ export interface PaymentRequest {
     cardNumber?: string | undefined;
     expiry?: string | undefined;
     cvv?: string | undefined;
+    bookingId?: string | undefined;
+}
+
+export enum PenaltyType {
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
 }
 
 export interface ProcessPaymentResult {
@@ -327,6 +622,7 @@ export interface PromocodeValidationResult {
     discountAmount?: number;
     finalPrice?: number;
     discountType?: string | undefined;
+    description?: string | undefined;
 }
 
 export interface RoomTypeModel {

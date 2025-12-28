@@ -6,7 +6,13 @@
         <div class="nav-links">
           <router-link to="/" class="nav-link">Главная</router-link>
           <router-link to="/hotels" class="nav-link">Все отели</router-link>
-          <router-link to="/about" class="nav-link">О нас</router-link>
+          <!-- <router-link to="/about" class="nav-link">О нас</router-link> -->
+          <router-link
+            :to="BookingStore.$state.isAuthenticated ? '/my-bookings' : '/login'"
+            class="nav-link"
+            >{{ BookingStore.$state.isAuthenticated ? 'Мои бронирования' : 'Войти' }}</router-link
+          >
+          <span v-if="BookingStore.$state.isAuthenticated" class="exit" @click="exit">Выйти</span>
         </div>
       </nav>
     </header>
@@ -15,6 +21,19 @@
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { useBookingStore } from '@/stores/bookingStore'
+import { useRouter } from 'vue-router'
+
+const BookingStore = useBookingStore()
+const router = useRouter()
+
+const exit = () => {
+  BookingStore.$state.isAuthenticated = false
+  router.push({ name: 'Home' })
+}
+</script>
 
 <style scoped>
 .layout-container {
@@ -55,6 +74,18 @@
 }
 
 .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.exit {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+  cursor: pointer;
+}
+.exit:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 

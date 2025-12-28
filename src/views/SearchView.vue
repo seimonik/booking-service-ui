@@ -13,7 +13,7 @@
             <DateInput v-model="searchParams.checkIn" label="Заезд" placeholder="Выберите дату" />
 
             <!-- Дата выезда -->
-            <DateInput v-model="searchParams.checkIn" label="Выезд" placeholder="Выберите дату" />
+            <DateInput v-model="searchParams.checkOut" label="Выезд" placeholder="Выберите дату" />
           </div>
 
           <!-- Кнопки действий -->
@@ -41,7 +41,7 @@
     </section>
 
     <!-- Результаты поиска -->
-    <section v-if="isSearching" class="search-results">
+    <!-- <section v-if="isSearching" class="search-results">
       <h2>Результаты поиска</h2>
       <div class="results-grid">
         <div v-for="hotel in filteredHotels" :key="hotel.id" class="hotel-card">
@@ -54,14 +54,14 @@
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import type { Hotel, SearchParams } from '@/types/hotel'
+import type { SearchParams } from '@/types/hotel'
 import CustomInput from '@/components/CustomInput.vue'
 import DateInput from '@/components/DateInput.vue'
 import CustomButton from '@/components/CustomButton.vue'
@@ -72,7 +72,6 @@ const searchParams = reactive<SearchParams>({
   destination: '',
   checkIn: '',
   checkOut: '',
-  guests: 2,
 })
 
 const isSearching = ref(false)
@@ -87,48 +86,47 @@ const popularDestinations = ref([
   'Крым',
 ])
 
-const hotels = ref<Hotel[]>([
-  {
-    id: 1,
-    name: 'Отель Премиум',
-    location: 'Москва',
-    price: 5000,
-    rating: 4.8,
-    image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Отель+Премиум',
-  },
-  {
-    id: 2,
-    name: 'Гранд Отель',
-    location: 'Санкт-Петербург',
-    price: 4500,
-    rating: 4.6,
-    image: 'https://via.placeholder.com/300x200/764ba2/ffffff?text=Гранд+Отель',
-  },
-  {
-    id: 3,
-    name: 'Морской Бриз',
-    location: 'Сочи',
-    price: 3500,
-    rating: 4.5,
-    image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Морской+Бриз',
-  },
-])
+// const hotels = ref<Hotel[]>([
+//   {
+//     id: 1,
+//     name: 'Отель Премиум',
+//     location: 'Москва',
+//     price: 5000,
+//     rating: 4.8,
+//     image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Отель+Премиум',
+//   },
+//   {
+//     id: 2,
+//     name: 'Гранд Отель',
+//     location: 'Санкт-Петербург',
+//     price: 4500,
+//     rating: 4.6,
+//     image: 'https://via.placeholder.com/300x200/764ba2/ffffff?text=Гранд+Отель',
+//   },
+//   {
+//     id: 3,
+//     name: 'Морской Бриз',
+//     location: 'Сочи',
+//     price: 3500,
+//     rating: 4.5,
+//     image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Морской+Бриз',
+//   },
+// ])
 
 const isFormValid = computed(() => {
   return (
     searchParams.destination.trim() !== '' &&
     searchParams.checkIn !== '' &&
-    searchParams.checkOut !== '' &&
-    searchParams.guests > 0
+    searchParams.checkOut !== ''
   )
 })
 
-const filteredHotels = computed(() => {
-  if (!searchParams.destination) return hotels.value
-  return hotels.value.filter((hotel) =>
-    hotel.location.toLowerCase().includes(searchParams.destination.toLowerCase()),
-  )
-})
+// const filteredHotels = computed(() => {
+//   if (!searchParams.destination) return hotels.value
+//   return hotels.value.filter((hotel) =>
+//     hotel.location.toLowerCase().includes(searchParams.destination.toLowerCase()),
+//   )
+// })
 
 const selectPopularDestination = (destination: string) => {
   searchParams.destination = destination
@@ -136,8 +134,14 @@ const selectPopularDestination = (destination: string) => {
 
 const handleSearch = () => {
   if (isFormValid.value) {
-    isSearching.value = true
-    // Здесь будет логика API запроса
+    router.push({
+      name: 'Hotels',
+      query: {
+        destination: searchParams.destination.trim(),
+        checkIn: searchParams.checkIn,
+        checkOut: searchParams.checkOut,
+      },
+    })
     console.log('Search params:', searchParams)
   }
 }

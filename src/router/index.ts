@@ -5,6 +5,8 @@ import SearchView from '@/views/SearchView.vue'
 import BookingView from '@/views/BookingView.vue'
 import HotelsView from '@/views/HotelsView.vue'
 import PaymentView from '@/views/PaymentView.vue'
+import ClientBookingsView from '@/views/ClientBookingsView.vue'
+import EmailLoginView from '@/views/EmailLoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +31,11 @@ const router = createRouter({
           meta: {
             title: 'Отели',
           },
+          props: (route) => ({
+            destination: route.query.destination,
+            checkIn: route.query.checkIn,
+            checkOut: route.query.checkOut,
+          }),
         },
         {
           path: '/booking/:hotelId',
@@ -42,6 +49,22 @@ const router = createRouter({
             checkIn: route.query.checkIn,
             checkOut: route.query.checkOut,
           }),
+        },
+        {
+          path: '/my-bookings',
+          name: 'MyBookings',
+          component: ClientBookingsView,
+          meta: {
+            title: 'Мои бронирования',
+          },
+        },
+        {
+          path: '/login',
+          name: 'Login',
+          component: EmailLoginView,
+          meta: {
+            title: 'Аутентификация',
+          },
         },
         {
           path: '/about',
