@@ -2,7 +2,7 @@
   <div class="layout-container">
     <header class="header">
       <nav class="nav">
-        <div class="logo">HotelBooking</div>
+        <div class="logo">SSU Booking</div>
         <div class="nav-links">
           <router-link to="/" class="nav-link">Главная</router-link>
           <router-link to="/hotels" class="nav-link">Все отели</router-link>

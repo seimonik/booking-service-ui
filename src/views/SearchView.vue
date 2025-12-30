@@ -130,6 +130,19 @@ const isFormValid = computed(() => {
 
 const selectPopularDestination = (destination: string) => {
   searchParams.destination = destination
+
+  const today = new Date().toISOString().slice(0, 10)
+  const tomorrowDate = new Date()
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+  const tomorrow = tomorrowDate.toISOString().slice(0, 10)
+  router.push({
+    name: 'Hotels',
+    query: {
+      destination: searchParams.destination.trim(),
+      checkIn: today,
+      checkOut: tomorrow,
+    },
+  })
 }
 
 const handleSearch = () => {

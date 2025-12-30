@@ -2,7 +2,7 @@
   <div class="booking-form">
     <div class="hotel-booking">
       <div class="hotel-header">
-        <img src="" :alt="hotel.name" class="hotel-image" />
+        <img :src="image" :alt="hotel.name" class="hotel-image" />
         <div class="hotel-info">
           <h2>{{ hotel.name }}</h2>
           <p><i class="fas fa-map-marker-alt"></i> {{ hotel.address }}</p>
@@ -206,6 +206,15 @@ const props = defineProps({
   checkIn: String,
   checkOut: String,
 })
+
+const hotelImages = [
+  'https://statushotel.ru/wp-content/uploads/2021/01/gallery_05-scaled.jpg',
+  'https://cdn.worldota.net/t/640x400/extranet/df/47/df476e71b7313dee1694f4a95f9ce28230fd3161.jpeg',
+  'https://continental-hotel.ru/upload/resize_cache/iblock/2aa/480_479_2619711fa078991f0a23d032687646b21/r6trqeeygapb68ns8r34dme3ntzx678w.jpeg',
+  'https://grandhoteleurope.com/upload/iblock/752/hyt2l3zl90gc0twlh4i0xu4c09z0ctl6.jpg',
+  'https://www.president-hotel.ru/upload/iblock/9b7/9b7c6a73c13099d1e3be84071bb14283.jpg',
+]
+const image = hotelImages[Math.floor(Math.random() * hotelImages.length)]
 
 const hotel = ref<HotelModel>({ roomTypes: [{ name: 'name' }] })
 onMounted(async () => {

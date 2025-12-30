@@ -17,6 +17,13 @@
           :hotel="hotel"
           @book-now="handleBookNow"
         />
+
+        <div v-if="!hotels.length" class="no-results-container">
+          <div class="no-results-icon">🔍</div>
+          <h3 class="no-results-title">Ничего не найдено</h3>
+          <p class="no-results-subtitle">Попробуйте изменить запрос или фильтры</p>
+          <slot name="actions"></slot>
+        </div>
       </simplebar>
     </div>
   </div>
@@ -58,6 +65,10 @@ const props = defineProps({
 
 onMounted(async () => {
   hotels.value = await BookingStore.GetBookings(props.destination, props.checkIn, props.checkOut)
+
+  searchParams.value.destination = props.destination || ''
+  searchParams.value.checkIn = props.checkIn || ''
+  searchParams.value.checkOut = props.checkOut || ''
 })
 
 const handleBookNow = (hotelId: string | undefined) => {
@@ -138,6 +149,35 @@ const viewAllHotels = async () => {
   flex: 1;
   min-height: 0; /* важно для корректной работы flex */
   overflow: auto;
+}
+
+.no-results-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+  min-height: 200px;
+}
+
+.no-results-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.no-results-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+}
+
+.no-results-subtitle {
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
 }
 
 .test {
